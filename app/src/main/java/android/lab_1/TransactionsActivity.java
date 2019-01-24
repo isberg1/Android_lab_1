@@ -7,19 +7,19 @@ import android.widget.TextView;
 
 public class TransactionsActivity extends AppCompatActivity {
 
+    private TextView textView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_transactions);
 
-
+        // get intent form calling activity
         Bundle bundle = getIntent().getExtras();
-        int balance = bundle.getInt("balance");
-        System.out.println("\n\naaaaaaaaaaaaa \n" + balance + "\n\naaaaaaaaaaa" );
-        TextView textView = findViewById(R.id.Transactions_Balance_textView);
+        int balance = bundle.getInt(MainActivity.balanceKey);
 
-
-        textView.setText("TransactionActivity:  " + Integer.toString(balance));
+        this.textView = findViewById(R.id.Transactions_Balance_textView);
+        textView.setText("TransactionActivity:  " + MainActivity.lblBalanceToString(balance));
 
 
     }

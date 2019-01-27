@@ -1,11 +1,10 @@
 package android.lab_1;
 
+import android.arch.lifecycle.Lifecycle;
 import android.content.Intent;
-import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.Random;
@@ -14,11 +13,13 @@ public class MainActivity extends AppCompatActivity {
 
     private  Integer lbl_balance;
     private String[] friends;
+    private DataBase mDB;
 
 
     private final int PICK_TRANSFER_REQUEST = 1;  // The request code for Transfer
     private final int PICK_TRANSACTION_REQUEST = 2;  // The request code for Transaction
 
+    public final static String DbKey ="DB";
     public final static String balanceKey ="balance";
     public final static String friendsKey ="friends";
     private TextView textView;
@@ -33,24 +34,39 @@ public class MainActivity extends AppCompatActivity {
         Random random = new Random();
         this.lbl_balance = (random.nextInt(111 - 90) + 90) * 100;
 
-        this.friends = getFriends();
+        Integer temp = (random.nextInt(111 - 90) + 90) * 100;
+
+        //configure DB connection
+        mDB =new DataBase(temp);
+
+        setFriends();
 
         // set text field value of MainActivity_intBalance_TextView
         this.textView = findViewById(R.id.MainActivity_intBalance_TextView);
-        this.textView.setText(lblBalanceToString(this.lbl_balance));
+        this.textView.setText(lblBalanceToString(mDB.getLbl_balance()));
+    }
 
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+        this.textView.setText(lblBalanceToString(mDB.getLbl_balance()));
 
     }
 
-    private String[] getFriends() {
+    private void setFriends() {
         String[] friends = {"homer","marge","bart","lisa", "maggi", "moe", "mr.Burns" };
-        return friends;
+
+        for (String temp : friends) {
+            mDB.addFriend(temp);
+        }
     }
 
-    public static String lblBalanceToString (Integer balance) {
-        return   String.format("%.02f",(balance.floatValue() / 100));
+    public String lblBalanceToString (Integer value) {
+        return   String.format("%.02f",(value.floatValue() / 100));
     }
 
+    // todo copier den returnerende DB til mainact DB
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -65,17 +81,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-// todo finish making 
+// todo implementer
     private void transferResult(int requestCode, Intent data) {
 
         if (requestCode == RESULT_CANCELED ) {
             return;
         }
 
-        Bundle bundle = new Bundle();
-        bundle =data.getExtras();
 
-        String string = bundle.getString(balanceKey);
 
 
     }
@@ -99,9 +112,8 @@ public class MainActivity extends AppCompatActivity {
     public void Transfer(View view) {
         // make intent and set data
         Intent intent = new Intent(MainActivity.this, TransferActivity.class);
-        intent.putExtra(balanceKey, this.lbl_balance);
-        intent.putExtra(friendsKey,this.friends);
-
+        intent.putExtra(DbKey, mDB);
+        // todo change to startActivityForResult in order to copy new DB
         startActivity(intent);
 
     }
@@ -110,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
     private class TransactionEvent  {
         String timeStamp;
-        String resipient;
+        String recipient;
         Integer transferAmount;
         Integer newBalance;
 
@@ -120,11 +132,11 @@ public class MainActivity extends AppCompatActivity {
              String formattedString = "\n";
              formattedString += timeStamp;
              formattedString += separator;
-             formattedString += resipient;
+             formattedString += recipient;
              formattedString += separator;
-             formattedString += MainActivity.lblBalanceToString(transferAmount);
+             formattedString += lblBalanceToString(transferAmount);
              formattedString += separator;
-             formattedString += MainActivity.lblBalanceToString(newBalance);
+             formattedString += lblBalanceToString(newBalance);
 
             return formattedString;
         }

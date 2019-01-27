@@ -19,7 +19,7 @@ public class TransactionsActivity extends AppCompatActivity {
         int balance = bundle.getInt(MainActivity.balanceKey);
 
         this.textView = findViewById(R.id.Transactions_Balance_textView);
-        textView.setText("TransactionActivity:  " + MainActivity.lblBalanceToString(balance));
+        textView.setText("TransactionActivity:  " /*+ MainActivity.lblBalanceToString(balance)*/);
 
 
     }

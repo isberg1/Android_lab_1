@@ -1,23 +1,23 @@
 package android.lab_1;
 
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
-public class TransferActivity extends AppCompatActivity {
+public class TransferActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     private TextView textView;
-    private Integer lbl_balance;
-    private String[] friends;
+    private TextView mLblAmountCheck;
+    private DataBase mDB;
+
     private EditText txt_amount;
     private Button btn_pay;
     private Spinner spinner;
@@ -26,6 +26,9 @@ public class TransferActivity extends AppCompatActivity {
     private int FLAG_OK=1;
     private int FLAG_NOT_OK = 0;
 
+    private Integer mAmountToTransfer = 0;
+    private Friend mRecipient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,48 +36,87 @@ public class TransferActivity extends AppCompatActivity {
 
         // get data from intent
         Bundle bundle = getIntent().getExtras();
-        this.lbl_balance = bundle.getInt(MainActivity.balanceKey);
+        mDB = (DataBase)bundle.getSerializable(MainActivity.DbKey);
+
+        setUp();
 
         // get Gui Field for debugging todo remove eventually
         this.textView = findViewById(R.id.main_transfer_textView);
-        this.textView.setText("TransferActivity:  " + MainActivity.lblBalanceToString(lbl_balance));
+       debug();
 
-        // get Gui Field for dropdown menu
-        this.spinner = findViewById(R.id.Transfer_friend_dropdown_spinner);
-        this.friends = bundle.getStringArray(MainActivity.friendsKey);
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, this.friends);
-        this.spinner.setAdapter(adapter);
 
-        // get Gui Field
-        this.txt_amount = findViewById(R.id.txt_amount);
-
-        // get Gui Field
-        this.btn_pay = findViewById(R.id.btn_pay);
-        this.btn_pay.setEnabled(false);
-        this.flag = FLAG_NOT_OK;
-
-        // todo add check to see if value has change several times
       //  checks to see if text has been entered into the field txt_amount
         txt_amount.setOnEditorActionListener((textView, i, keyEvent) -> {
-            if(i== EditorInfo.IME_ACTION_DONE){
+            if(i == EditorInfo.IME_ACTION_DONE){
                 if (validateTxtAmount()) {
                     btn_pay.setEnabled(true);
+                    String toTransfer = this.txt_amount.getText().toString();
+                    this.mAmountToTransfer =  stringToFormattedInteger(toTransfer);
+                    this.txt_amount.setCursorVisible(false);
+                    this.txt_amount.getText().clear();
+                    this.txt_amount.setHint("value to be transferred:\t" + toTransfer) ;
+                    this.mLblAmountCheck.setText("");
+                } else {
+                    btn_pay.setEnabled(false);
+                    String error ="amount must be larger than 0\n and smaller or equal to ";
+                    error += mDB.lblBalanceToFormattedString();
+                    this.mLblAmountCheck.setText( error);
+                    this.mLblAmountCheck.setTextColor(Color.RED);
                 }
             }
+
             return false;
         });
 
     }
+
+    private Integer stringToFormattedInteger(String toTransfer) {
+
+        Integer intAmount;
+
+        try {
+            String temp =  String.format(java.util.Locale.US,"%.02f",Float.valueOf(toTransfer));
+            Float floatAmount = Float.valueOf(temp) * 100;
+            intAmount = floatAmount.intValue();
+        } catch (NumberFormatException e) {
+            // todo handle exception better
+            e.printStackTrace();
+            this.mLblAmountCheck.setText("Internal error, try again ");
+            return 0;
+        }
+        return intAmount;
+    }
+
+    public void setUp() {
+
+        // get Gui Field for dropdown menu
+        this.spinner = findViewById(R.id.Transfer_friend_dropdown_spinner);
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, mDB.friendsAsStringArray());
+        this.spinner.setAdapter(adapter);
+        this.spinner.setOnItemSelectedListener(this);
+
+        // get Gui Field
+        this.txt_amount = findViewById(R.id.txt_amount);
+        this.mLblAmountCheck = findViewById(R.id.lbl_amount_check);
+
+        // get Gui Field
+        this.btn_pay = findViewById(R.id.btn_pay);
+        this.btn_pay.setEnabled(false);
+    }
+
 // todo return value to calling activity
     public void btn_pay(View view) {
 
-        Button button = findViewById(R.id.btn_pay);
-
-
+        if (this.mRecipient != null && this.mAmountToTransfer != null){
+            mDB.newTransaction(this.mRecipient, this.mAmountToTransfer);
+           // finish();
+            debug();
+            return;
+        }
+        this.mLblAmountCheck.setText("Internal error, try again!");
     }
-
-
 
     private boolean validateTxtAmount(){
 
@@ -95,11 +137,34 @@ public class TransferActivity extends AppCompatActivity {
             return false;
         }
         // if number is to big or to small
-        if (subtract > this.lbl_balance || subtract == 0) {
+        if (subtract > mDB.getLbl_balance() || subtract == 0) {
             return false;
         }
 
         return true;
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        String s = (String) this.spinner.getSelectedItem();
+
+        if (mDB.validFriend(s)){
+
+
+            s.replaceAll(" ","");
+            this.mRecipient = mDB.copyFriend(s);
+            return;
+        }
+        this.mRecipient = null;
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        this.mRecipient = null;
+
+    }
+
+    public void debug(){
+        this.textView.setText("in account  " + mDB.lblBalanceToFormattedString()+ " to transfer " + mAmountToTransfer);
+    }
 }

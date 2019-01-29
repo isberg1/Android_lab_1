@@ -72,29 +72,30 @@ public class MainActivity extends AppCompatActivity {
 
         switch (requestCode) {
             case PICK_TRANSFER_REQUEST      :
-                transferResult(requestCode, data);
+                transferResult(resultCode, data);
                 break;
             case PICK_TRANSACTION_REQUEST   :
-                transactionResult(requestCode, data);
+                transactionResult(resultCode, data);
                 break;
             default: return;
         }
 
     }
 // todo implementer
-    private void transferResult(int requestCode, Intent data) {
+    private void transferResult(int resultCode, Intent data) {
 
-        if (requestCode == RESULT_CANCELED ) {
+        if (resultCode == RESULT_CANCELED ) {
             return;
         }
 
+        Bundle bundle = data.getExtras(); //getIntent().getExtras();
 
-
+        this.mDB = (DataBase)bundle.getSerializable(MainActivity.DbKey);
 
     }
 
 
-    private void transactionResult(int requestCode, Intent data) {
+    private void transactionResult(int resultCode, Intent data) {
     }
 
 
@@ -114,7 +115,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, TransferActivity.class);
         intent.putExtra(DbKey, mDB);
         // todo change to startActivityForResult in order to copy new DB
-        startActivity(intent);
+//        startActivity(intent);
+        startActivityForResult(intent, PICK_TRANSFER_REQUEST);
 
     }
 

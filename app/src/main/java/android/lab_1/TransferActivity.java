@@ -1,5 +1,7 @@
 package android.lab_1;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -111,9 +113,13 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
         if (this.mRecipient != null && this.mAmountToTransfer != null){
             mDB.newTransaction(this.mRecipient, this.mAmountToTransfer);
-           // finish();
-            debug();
-            return;
+
+            Intent data = new Intent(TransferActivity.this, MainActivity.class);
+            data.putExtra(MainActivity.DbKey,this.mDB);
+            setResult(Activity.RESULT_OK,data);
+            finish();
+//            debug();
+//            return;
         }
         this.mLblAmountCheck.setText("Internal error, try again!");
     }

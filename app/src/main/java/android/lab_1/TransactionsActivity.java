@@ -27,7 +27,6 @@ public class TransactionsActivity extends AppCompatActivity {
 
         // get intent form calling activity
         Bundle bundle = getIntent().getExtras();
-//        this.mDB = (DataBase) bundle.getSerializable(MainActivity.DbKey);
         mDB = (DataBase)bundle.getSerializable(MainActivity.DbKey);
         this.list = new ArrayList();
 
@@ -36,7 +35,7 @@ public class TransactionsActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         transactionHistoryToString();
-        adapter = new RecyclerAdapter(list);
+        adapter = new RecyclerAdapter(mDB.getHistory(), this);
        // recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
 

@@ -29,6 +29,16 @@ public class TransactionEvent implements Serializable {
 
         return formattedString;
     }
+
+    public String shortToString(){
+
+        String formattedString = recipient.toString();
+        formattedString += "  ";
+                formattedString += lblBalanceToString(transferAmount);
+
+        return formattedString;
+    }
+
     public String lblBalanceToString (Integer value) {
         return   String.format("%.02f",(value.floatValue() / 100));
     }

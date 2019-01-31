@@ -51,25 +51,32 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         txt_amount.setOnEditorActionListener((textView, i, keyEvent) -> {
             if(i == EditorInfo.IME_ACTION_DONE){
                 if (validateTxtAmount()) {
-                    btn_pay.setEnabled(true);
-                    String toTransfer = this.txt_amount.getText().toString();
-                    this.mAmountToTransfer =  stringToFormattedInteger(toTransfer);
-                    this.txt_amount.setCursorVisible(false);
-                    this.txt_amount.getText().clear();
-                    this.txt_amount.setHint("value to be transferred:\t" + toTransfer) ;
-                    this.mLblAmountCheck.setText("");
+                    correctValueResponse();
                 } else {
-                    btn_pay.setEnabled(false);
-                    String error ="amount must be larger than 0\n and smaller or equal to ";
-                    error += mDB.lblBalanceToFormattedString();
-                    this.mLblAmountCheck.setText( error);
-                    this.mLblAmountCheck.setTextColor(Color.RED);
+                    incorrectValueResponse();
                 }
             }
-
             return false;
         });
 
+    }
+
+    public void correctValueResponse(){
+        btn_pay.setEnabled(true);
+        String toTransfer = this.txt_amount.getText().toString();
+        this.mAmountToTransfer = stringToFormattedInteger(toTransfer);
+        this.txt_amount.setCursorVisible(false);
+        this.txt_amount.getText().clear();
+        this.txt_amount.setHint("value to be transferred:\t" + toTransfer) ;
+        this.mLblAmountCheck.setText("");
+    }
+
+    public void incorrectValueResponse(){
+        btn_pay.setEnabled(false);
+        String error ="amount must be larger than 0\n and smaller or equal to ";
+        error += mDB.lblBalanceToFormattedString();
+        this.mLblAmountCheck.setText( error);
+        this.mLblAmountCheck.setTextColor(Color.RED);
     }
 
     private Integer stringToFormattedInteger(String toTransfer) {
@@ -111,17 +118,17 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 // todo return value to calling activity
     public void btn_pay(View view) {
 
-        if (this.mRecipient != null && this.mAmountToTransfer != null){
-            mDB.newTransaction(this.mRecipient, this.mAmountToTransfer);
-
-            Intent data = new Intent(TransferActivity.this, MainActivity.class);
-            data.putExtra(MainActivity.DbKey,this.mDB);
-            setResult(Activity.RESULT_OK,data);
-            finish();
-//            debug();
-//            return;
+        if (this.mRecipient == null  || this.mAmountToTransfer == null){
+            this.mLblAmountCheck.setText("Missing recipient or transfer amount");
         }
-        this.mLblAmountCheck.setText("Internal error, try again!");
+        if (!mDB.newTransaction(this.mRecipient, this.mAmountToTransfer)){
+            this.mLblAmountCheck.setText("Internal error, try again!");
+        }
+
+        Intent data = new Intent(TransferActivity.this, MainActivity.class);
+        data.putExtra(MainActivity.DbKey,this.mDB);
+        setResult(Activity.RESULT_OK,data);
+        finish();
     }
 
     private boolean validateTxtAmount(){

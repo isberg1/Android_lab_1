@@ -37,7 +37,8 @@ public class MainActivity extends AppCompatActivity {
         Integer temp = (random.nextInt(111 - 90) + 90) * 100;
 
         //configure DB connection
-        mDB =new DataBase(temp);
+        String username = "Groundskeeper Willie";
+        mDB =new DataBase(temp, username);
 
         setFriends();
 
@@ -102,11 +103,9 @@ public class MainActivity extends AppCompatActivity {
     public void transactions(View view) {
         // make intent and set data
         Intent intent = new Intent(MainActivity.this, TransactionsActivity.class);
-        intent.putExtra(balanceKey, lbl_balance);
+        intent.putExtra(DbKey, mDB);
 
         startActivity(intent);
-
-
 
     }
 
@@ -118,30 +117,6 @@ public class MainActivity extends AppCompatActivity {
 //        startActivity(intent);
         startActivityForResult(intent, PICK_TRANSFER_REQUEST);
 
-    }
-
-
-
-    private class TransactionEvent  {
-        String timeStamp;
-        String recipient;
-        Integer transferAmount;
-        Integer newBalance;
-
-         @Override
-        public String toString() {
-             String separator = " | ";
-             String formattedString = "\n";
-             formattedString += timeStamp;
-             formattedString += separator;
-             formattedString += recipient;
-             formattedString += separator;
-             formattedString += lblBalanceToString(transferAmount);
-             formattedString += separator;
-             formattedString += lblBalanceToString(newBalance);
-
-            return formattedString;
-        }
     }
 
 

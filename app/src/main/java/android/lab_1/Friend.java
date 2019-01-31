@@ -27,6 +27,7 @@ public class Friend implements Serializable {
 
     @Override
     public String toString() {
+
         return name;
     }
 }

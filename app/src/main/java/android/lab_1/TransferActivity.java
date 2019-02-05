@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
@@ -22,13 +23,14 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
     private EditText txt_amount;
     private Button btn_pay;
+    private String mBtnPayStateKey = "buttonState";
     private Spinner spinner;
 
-    private int flag;
-    private int FLAG_OK=1;
-    private int FLAG_NOT_OK = 0;
+    private String mHintTxtAmount = "enter amount";
+    private String mHintTxtAmountKey = "Hint";
 
     private Integer mAmountToTransfer = 0;
+    private String  mAmountToTransferKey = "amount";
     private Friend mRecipient;
 
     @Override
@@ -44,7 +46,7 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
         // get Gui Field for debugging todo remove eventually
         this.textView = findViewById(R.id.main_transfer_textView);
-       debug();
+        debug();
 
 
       //  checks to see if text has been entered into the field txt_amount
@@ -59,6 +61,37 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
             return false;
         });
 
+        if (savedInstanceState != null){
+            this.mHintTxtAmount = savedInstanceState.getString(mHintTxtAmountKey);
+            this.txt_amount.setHint(this.mHintTxtAmount);
+//            this.spinner.setOnItemSelectedListener(this);
+            this.btn_pay.setEnabled(savedInstanceState.getBoolean(this.mBtnPayStateKey));
+            this.mAmountToTransfer = savedInstanceState.getInt(mAmountToTransferKey);
+            Friend temp = (Friend)savedInstanceState.getSerializable(friendKey);
+            if (temp != null){
+                this.mRecipient = temp;
+            }
+        }
+    }
+
+    public void setUp() {
+
+        // get Gui Field for dropdown menu
+        this.spinner = findViewById(R.id.Transfer_friend_dropdown_spinner);
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, mDB.friendsAsStringArray());
+        this.spinner.setAdapter(adapter);
+        this.spinner.setOnItemSelectedListener(this);
+
+        // get Gui Field
+        this.txt_amount = findViewById(R.id.txt_amount);
+        this.txt_amount.setHint(mHintTxtAmount);
+        this.mLblAmountCheck = findViewById(R.id.lbl_amount_check);
+
+        // get Gui Field
+        this.btn_pay = findViewById(R.id.btn_pay);
+        this.btn_pay.setEnabled(false);
     }
 
     public void correctValueResponse(){
@@ -67,7 +100,8 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         this.mAmountToTransfer = stringToFormattedInteger(toTransfer);
         this.txt_amount.setCursorVisible(false);
         this.txt_amount.getText().clear();
-        this.txt_amount.setHint("value to be transferred:\t" + toTransfer) ;
+        this.mHintTxtAmount = "value to be transferred:\t" + toTransfer;
+        this.txt_amount.setHint(mHintTxtAmount);
         this.mLblAmountCheck.setText("");
     }
 
@@ -96,33 +130,21 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         return intAmount;
     }
 
-    public void setUp() {
-
-        // get Gui Field for dropdown menu
-        this.spinner = findViewById(R.id.Transfer_friend_dropdown_spinner);
-
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, mDB.friendsAsStringArray());
-        this.spinner.setAdapter(adapter);
-        this.spinner.setOnItemSelectedListener(this);
-
-        // get Gui Field
-        this.txt_amount = findViewById(R.id.txt_amount);
-        this.mLblAmountCheck = findViewById(R.id.lbl_amount_check);
-
-        // get Gui Field
-        this.btn_pay = findViewById(R.id.btn_pay);
-        this.btn_pay.setEnabled(false);
-    }
 
 // todo return value to calling activity
     public void btn_pay(View view) {
 
-        if (this.mRecipient == null  || this.mAmountToTransfer == null){
-            this.mLblAmountCheck.setText("Missing recipient or transfer amount");
+        if (this.mRecipient == null  ){
+            this.mLblAmountCheck.setText("Missing recipient ");
+            return;
+        }
+        if ( this.mAmountToTransfer == null){
+            this.mLblAmountCheck.setText("Missing transfer amount");
+            return;
         }
         if (!mDB.newTransaction(this.mRecipient, this.mAmountToTransfer)){
             this.mLblAmountCheck.setText("Internal error, try again!");
+            return;
         }
 
         Intent data = new Intent(TransferActivity.this, MainActivity.class);
@@ -163,7 +185,6 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
         if (mDB.validFriend(s)){
 
-
             s.replaceAll(" ","");
             this.mRecipient = mDB.copyFriend(s);
             return;
@@ -178,6 +199,41 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
     }
 
     public void debug(){
-        this.textView.setText("in account  " + mDB.lblBalanceToFormattedString()+ " to transfer " + mAmountToTransfer);
+        this.textView.setText("in account  " + mDB.lblBalanceToFormattedString() + " to transfer " + mAmountToTransfer);
     }
+
+
+    String friendKey = "friendKey";
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+
+        outState.putSerializable(MainActivity.DbKey, mDB);
+        outState.putString(mHintTxtAmountKey, this.mHintTxtAmount);
+        outState.putBoolean(this.mBtnPayStateKey,this.btn_pay.isEnabled());
+        outState.putInt(mAmountToTransferKey, mAmountToTransfer);
+        outState.putSerializable(friendKey, this.mRecipient);
+
+    }
+
+    /*@Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        this.mDB = (DataBase) savedInstanceState.getSerializable(MainActivity.DbKey);
+      //  setUp();
+        this.mHintTxtAmount = savedInstanceState.getString(mHintTxtAmountKey);
+        this.txt_amount.setHint(this.mHintTxtAmount);
+        this.spinner.setOnItemSelectedListener(this);
+        this.btn_pay.setEnabled(savedInstanceState.getBoolean(this.mBtnPayStateKey));
+        this.mAmountToTransfer = savedInstanceState.getInt(mAmountToTransferKey);
+        this.mRecipient = (Friend)savedInstanceState.getSerializable(friendKey);
+        Log.d("qqqqqqqqqqqq", Integer.toString(this.mAmountToTransfer));
+
+        System.out.print("sssssssss  " + this.mRecipient);
+
+    }*/
+
+
 }

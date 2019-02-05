@@ -11,17 +11,10 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    private  Integer lbl_balance;
-    private String[] friends;
     private DataBase mDB;
-
-
     private final int PICK_TRANSFER_REQUEST = 1;  // The request code for Transfer
-    private final int PICK_TRANSACTION_REQUEST = 2;  // The request code for Transaction
 
     public final static String DbKey ="DB";
-    public final static String balanceKey ="balance";
-    public final static String friendsKey ="friends";
     private TextView textView;
 
     @Override
@@ -32,12 +25,12 @@ public class MainActivity extends AppCompatActivity {
 
         // make random int from 90 to 110
         Random random = new Random();
-        this.lbl_balance = (random.nextInt(111 - 90) + 90) * 100;
+        //this.lbl_balance = (random.nextInt(111 - 90) + 90) * 100;
 
         Integer temp = (random.nextInt(111 - 90) + 90) * 100;
 
         //configure DB connection
-        String username = "Groundskeeper Willie";
+        String username = "mr.Burns";
         mDB =new DataBase(temp, username);
 
         setFriends();
@@ -56,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setFriends() {
-        String[] friends = {"homer","marge","bart","lisa", "maggi", "moe", "mr.Burns" };
+        String[] friends = {"Homer","Marge","Bart","Lisa", "Maggi", "Moe", "Apo" };
 
         for (String temp : friends) {
             mDB.addFriend(temp);
@@ -75,9 +68,6 @@ public class MainActivity extends AppCompatActivity {
             case PICK_TRANSFER_REQUEST      :
                 transferResult(resultCode, data);
                 break;
-            case PICK_TRANSACTION_REQUEST   :
-                transactionResult(resultCode, data);
-                break;
             default: return;
         }
 
@@ -94,11 +84,6 @@ public class MainActivity extends AppCompatActivity {
         this.mDB = (DataBase)bundle.getSerializable(MainActivity.DbKey);
 
     }
-
-
-    private void transactionResult(int resultCode, Intent data) {
-    }
-
 
     public void transactions(View view) {
         // make intent and set data
@@ -120,5 +105,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    // TODO pressing the normal android "back button", quits the app.
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putSerializable(MainActivity.DbKey, mDB);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        this.mDB = (DataBase) savedInstanceState.getSerializable(MainActivity.DbKey);
+    }
 }

@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 public class TransferActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
-    private TextView textView;
     private TextView mLblAmountCheck;
     private DataBase mDB;
 
@@ -32,7 +31,7 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
     private Integer mAmountToTransfer = 0;
     private String  mAmountToTransferKey = "amount";
     private Friend mRecipient;
-
+    private String friendKey = "friendKey";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,8 +44,6 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         setUp();
 
         // get Gui Field for debugging todo remove eventually
-        this.textView = findViewById(R.id.main_transfer_textView);
-        debug();
 
 
       //  checks to see if text has been entered into the field txt_amount
@@ -198,12 +195,9 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
     }
 
-    public void debug(){
-        this.textView.setText("in account  " + mDB.lblBalanceToFormattedString() + " to transfer " + mAmountToTransfer);
-    }
 
 
-    String friendKey = "friendKey";
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -217,23 +211,18 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
     }
 
-    /*@Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
+    public void CheatButton(View view) {
 
-        this.mDB = (DataBase) savedInstanceState.getSerializable(MainActivity.DbKey);
-      //  setUp();
-        this.mHintTxtAmount = savedInstanceState.getString(mHintTxtAmountKey);
-        this.txt_amount.setHint(this.mHintTxtAmount);
-        this.spinner.setOnItemSelectedListener(this);
-        this.btn_pay.setEnabled(savedInstanceState.getBoolean(this.mBtnPayStateKey));
-        this.mAmountToTransfer = savedInstanceState.getInt(mAmountToTransferKey);
-        this.mRecipient = (Friend)savedInstanceState.getSerializable(friendKey);
-        Log.d("qqqqqqqqqqqq", Integer.toString(this.mAmountToTransfer));
+        for (int i = 0; i < 10 ; i++){
+            mDB.newTransaction(this.mRecipient, 1);
+        }
 
-        System.out.print("sssssssss  " + this.mRecipient);
+        Intent data = new Intent(TransferActivity.this, MainActivity.class);
+        data.putExtra(MainActivity.DbKey,this.mDB);
+        setResult(Activity.RESULT_OK,data);
+        finish();
+    }
 
-    }*/
 
 
 }

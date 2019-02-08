@@ -1,19 +1,15 @@
 package android.lab_1;
 
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.TextView;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionsActivity extends AppCompatActivity {
 
-    private TextView textView;
     private DataBase mDB;
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
@@ -29,18 +25,17 @@ public class TransactionsActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         mDB = (DataBase)bundle.getSerializable(MainActivity.DbKey);
         this.list = new ArrayList();
-
+        // initialize gui elements
         recyclerView = findViewById(R.id.RecyclerView);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
         transactionHistoryToString();
         adapter = new RecyclerAdapter(mDB.getHistory(), this);
-       // recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
 
     }
-
+    // extracts a String list of all transactions form mDB
     private void transactionHistoryToString() {
 
         if (this.mDB == null){

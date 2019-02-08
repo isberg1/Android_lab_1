@@ -43,9 +43,6 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
         setUp();
 
-        // get Gui Field for debugging todo remove eventually
-
-
       //  checks to see if text has been entered into the field txt_amount
         txt_amount.setOnEditorActionListener((textView, i, keyEvent) -> {
             if(i == EditorInfo.IME_ACTION_DONE){
@@ -57,11 +54,10 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
             }
             return false;
         });
-
+        // ensure that changing orientation does not restart the app
         if (savedInstanceState != null){
             this.mHintTxtAmount = savedInstanceState.getString(mHintTxtAmountKey);
             this.txt_amount.setHint(this.mHintTxtAmount);
-//            this.spinner.setOnItemSelectedListener(this);
             this.btn_pay.setEnabled(savedInstanceState.getBoolean(this.mBtnPayStateKey));
             this.mAmountToTransfer = savedInstanceState.getInt(mAmountToTransferKey);
             Friend temp = (Friend)savedInstanceState.getSerializable(friendKey);
@@ -71,6 +67,7 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         }
     }
 
+    // initialise all gui elements
     public void setUp() {
 
         // get Gui Field for dropdown menu
@@ -91,25 +88,28 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         this.btn_pay.setEnabled(false);
     }
 
+    // respond to correct values entered
     public void correctValueResponse(){
         btn_pay.setEnabled(true);
         String toTransfer = this.txt_amount.getText().toString();
         this.mAmountToTransfer = stringToFormattedInteger(toTransfer);
         this.txt_amount.setCursorVisible(false);
         this.txt_amount.getText().clear();
+
         this.mHintTxtAmount = "value to be transferred:\t" + toTransfer;
         this.txt_amount.setHint(mHintTxtAmount);
         this.mLblAmountCheck.setText("");
     }
-
+    // respond to incorrect values entered
     public void incorrectValueResponse(){
         btn_pay.setEnabled(false);
+
         String error ="amount must be larger than 0\n and smaller or equal to ";
         error += mDB.lblBalanceToFormattedString();
         this.mLblAmountCheck.setText( error);
         this.mLblAmountCheck.setTextColor(Color.RED);
     }
-
+    // convert from string Integer
     private Integer stringToFormattedInteger(String toTransfer) {
 
         Integer intAmount;
@@ -119,7 +119,6 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
             Float floatAmount = Float.valueOf(temp) * 100;
             intAmount = floatAmount.intValue();
         } catch (NumberFormatException e) {
-            // todo handle exception better
             e.printStackTrace();
             this.mLblAmountCheck.setText("Internal error, try again ");
             return 0;
@@ -128,7 +127,7 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
     }
 
 
-// todo return value to calling activity
+    // conduct a Transaction
     public void btn_pay(View view) {
 
         if (this.mRecipient == null  ){
@@ -149,7 +148,7 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         setResult(Activity.RESULT_OK,data);
         finish();
     }
-
+    // validate the entered amount
     private boolean validateTxtAmount(){
 
         if (this.txt_amount.getText() == null) {
@@ -175,7 +174,7 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
         return true;
     }
-
+    // when a item in the drop down menu is selected
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         String s = (String) this.spinner.getSelectedItem();
@@ -188,16 +187,14 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         }
         this.mRecipient = null;
     }
-
+    // when a item is not selected
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
         this.mRecipient = null;
 
     }
 
-
-
-
+    // ensure that changing orientation does not restart the app
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -210,7 +207,7 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         outState.putSerializable(friendKey, this.mRecipient);
 
     }
-
+    // for testing. conducts 10 transactions
     public void CheatButton(View view) {
 
         for (int i = 0; i < 10 ; i++){

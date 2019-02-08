@@ -1,7 +1,7 @@
 package android.lab_1;
 
 import java.io.Serializable;
-
+// stores a transaction
 public class TransactionEvent implements Serializable {
     String timeStamp;
     Friend recipient;
@@ -14,7 +14,7 @@ public class TransactionEvent implements Serializable {
         this.transferAmount = transferAmount;
         this.newBalance = newBalance;
     }
-
+    // converts fields to string
     @Override
     public String toString() {
         String separator = " | ";
@@ -29,7 +29,7 @@ public class TransactionEvent implements Serializable {
 
         return formattedString;
     }
-
+    // converts some of the fields to string
     public String shortToString(){
 
         String formattedString = recipient.toString();
@@ -38,7 +38,7 @@ public class TransactionEvent implements Serializable {
 
         return formattedString;
     }
-
+    // converts Integer to String
     public String lblBalanceToString (Integer value) {
         return   String.format("%.02f",(value.floatValue() / 100));
     }

@@ -1,5 +1,7 @@
 # lab_1 IMT3673 2019
 
+this app was made using a Samsung galaxy S5 with android 6.0.1
+
 
 This is a simple in memory banking app. it consists of 3 activities. 
 *   MainActivity: the launching activity, displays current balance, one button for moving to TransferActivity and 

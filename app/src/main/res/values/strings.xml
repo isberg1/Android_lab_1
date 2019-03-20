@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Android_lab_1</string>
+    <string name="amount_eur">Amount [EUR]</string>
+    <string name="balance_eur">Balance [EUR]</string>
+    <string name="transactions">Transactions</string>
+    <string name="transfer">Transfer</string>
+    <string name="Internal_error">Internal error, try again</string>
+    <string name="Missing_recipient">Missing recipient</string>
+    <string name="Missing_transfer_amount">Missing transfer amount</string>
 </resources>

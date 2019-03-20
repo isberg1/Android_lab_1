@@ -12,7 +12,6 @@ public class MainActivity extends AppCompatActivity {
 
     private DataBase mDB;
     private final int PICK_TRANSFER_REQUEST = 1;  // The request code for Transfer
-
     public final static String DbKey ="DB";
     private TextView textView;
 
@@ -58,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         return   String.format("%.02f",(value.floatValue() / 100));
     }
 
-    // todo copier den returnerende DB til mainact DB
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -67,12 +65,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-       /* switch (requestCode) {
-            case PICK_TRANSFER_REQUEST      :
-                transferResult(resultCode, data);
-                break;
-            default: return;
-        }*/
 
     }
     // process the result from Transfer Activity

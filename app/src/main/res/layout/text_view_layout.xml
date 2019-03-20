@@ -4,10 +4,9 @@
     android:layout_height="wrap_content"
     android:text="testing Test"
     android:textStyle="bold"
-    android:textSize="18dp"
-    android:layout_margin="12dp"
-    android:padding="12dp"
-
+    android:textSize="20sp"
+    android:layout_margin="5dp"
+    android:padding="5dp"
     >
 
 </TextView>

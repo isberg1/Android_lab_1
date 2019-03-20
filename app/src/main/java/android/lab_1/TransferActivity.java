@@ -3,9 +3,11 @@ package android.lab_1;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
+import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
@@ -14,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class TransferActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -32,6 +35,8 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
     private String  mAmountToTransferKey = "amount";
     private Friend mRecipient;
     private String friendKey = "friendKey";
+    private MediaPlayer mp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +44,13 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
         // get data from intent
         Bundle bundle = getIntent().getExtras();
-        mDB = (DataBase)bundle.getSerializable(MainActivity.DbKey);
+        try {
+            mDB = (DataBase)bundle.getSerializable(MainActivity.DbKey);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this,"some error occurred", Toast.LENGTH_SHORT);
+            finish();
+        }
 
         setUp();
 
@@ -54,6 +65,27 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
             }
             return false;
         });
+        //  checks to see if text has been entered into the field txt_amount
+        txt_amount.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (validateTxtAmount()) {
+                    correctValueResponse();
+                } else {
+                    incorrectValueResponse();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
         // ensure that changing orientation does not restart the app
         if (savedInstanceState != null){
             this.mHintTxtAmount = savedInstanceState.getString(mHintTxtAmountKey);
@@ -86,6 +118,8 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         // get Gui Field
         this.btn_pay = findViewById(R.id.btn_pay);
         this.btn_pay.setEnabled(false);
+
+        mp = MediaPlayer.create(this, R.raw.ping);
     }
 
     // respond to correct values entered
@@ -93,16 +127,18 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
         btn_pay.setEnabled(true);
         String toTransfer = this.txt_amount.getText().toString();
         this.mAmountToTransfer = stringToFormattedInteger(toTransfer);
-        this.txt_amount.setCursorVisible(false);
-        this.txt_amount.getText().clear();
-
-        this.mHintTxtAmount = "value to be transferred:\t" + toTransfer;
-        this.txt_amount.setHint(mHintTxtAmount);
-        this.mLblAmountCheck.setText("");
+        this.mLblAmountCheck.setText( "");
+        this.mLblAmountCheck.setTextColor(Color.WHITE);
     }
     // respond to incorrect values entered
     public void incorrectValueResponse(){
         btn_pay.setEnabled(false);
+
+        String tetAmountTemp = this.txt_amount.getText().toString();
+        if (tetAmountTemp.equals("") || tetAmountTemp.equals(" ") ) {
+
+            return;
+        }
 
         String error ="amount must be larger than 0\n and smaller or equal to ";
         error += mDB.lblBalanceToFormattedString();
@@ -120,7 +156,7 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
             intAmount = floatAmount.intValue();
         } catch (NumberFormatException e) {
             e.printStackTrace();
-            this.mLblAmountCheck.setText("Internal error, try again ");
+            this.mLblAmountCheck.setText(R.string.Internal_error);
             return 0;
         }
         return intAmount;
@@ -131,21 +167,22 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
     public void btn_pay(View view) {
 
         if (this.mRecipient == null  ){
-            this.mLblAmountCheck.setText("Missing recipient ");
+            this.mLblAmountCheck.setText(R.string.Missing_recipient);
             return;
         }
         if ( this.mAmountToTransfer == null){
-            this.mLblAmountCheck.setText("Missing transfer amount");
+            this.mLblAmountCheck.setText(R.string.Missing_transfer_amount);
             return;
         }
         if (!mDB.newTransaction(this.mRecipient, this.mAmountToTransfer)){
-            this.mLblAmountCheck.setText("Internal error, try again!");
+            this.mLblAmountCheck.setText(R.string.Internal_error);
             return;
         }
 
         Intent data = new Intent(TransferActivity.this, MainActivity.class);
         data.putExtra(MainActivity.DbKey,this.mDB);
         setResult(Activity.RESULT_OK,data);
+        mp.start();
         finish();
     }
     // validate the entered amount
@@ -159,11 +196,14 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
         try {
             String temp = this.txt_amount.getText().toString();
+            // if empty in text field
+            if (temp.equals("") || temp.equals(" ")) {
+                return false;
+            }
 
             float floatTemp =  Float.valueOf(temp) * 100;
             subtract = (int)floatTemp;
         } catch (NumberFormatException e) {
-            //todo handle exception better
             e.printStackTrace();
             return false;
         }
@@ -199,7 +239,6 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-
         outState.putSerializable(MainActivity.DbKey, mDB);
         outState.putString(mHintTxtAmountKey, this.mHintTxtAmount);
         outState.putBoolean(this.mBtnPayStateKey,this.btn_pay.isEnabled());
@@ -208,18 +247,17 @@ public class TransferActivity extends AppCompatActivity implements AdapterView.O
 
     }
     // for testing. conducts 10 transactions
-    public void CheatButton(View view) {
+   /* public void CheatButton(View view) {
 
         for (int i = 0; i < 10 ; i++){
             mDB.newTransaction(this.mRecipient, 1);
         }
-
         Intent data = new Intent(TransferActivity.this, MainActivity.class);
         data.putExtra(MainActivity.DbKey,this.mDB);
         setResult(Activity.RESULT_OK,data);
         finish();
     }
-
+*/
 
 
 }

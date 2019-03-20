@@ -3,10 +3,10 @@ package android.lab_1;
 import java.io.Serializable;
 // stores a transaction
 public class TransactionEvent implements Serializable {
-    String timeStamp;
-    Friend recipient;
-    Integer transferAmount;
-    Integer newBalance;
+    private String timeStamp;
+    private Friend recipient;
+    private Integer transferAmount;
+    private Integer newBalance;
 
     public TransactionEvent(String timeStamp, Friend recipient, Integer transferAmount, Integer newBalance) {
         this.timeStamp = timeStamp;
@@ -18,7 +18,7 @@ public class TransactionEvent implements Serializable {
     @Override
     public String toString() {
         String separator = " | ";
-        String formattedString = "\n";
+        String formattedString = "";
         formattedString += timeStamp;
         formattedString += separator;
         formattedString += recipient.toString();
